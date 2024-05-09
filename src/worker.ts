@@ -193,8 +193,10 @@ export class AddWorker extends zkCloudWorker {
           `one tx included into block: hash: ${txIncluded.hash} status: ${txIncluded.status}`
         );
         //await sleep(10000);
+        await this.cloud.releaseDeployer([txIncluded.hash]);
         return txIncluded.hash;
       }
+      await this.cloud.releaseDeployer([txSent.hash]);
       return txSent.hash;
     } catch (error) {
       console.error("Error sending transaction", error);

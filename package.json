@@ -3,7 +3,10 @@
   "version": "0.1.0",
   "author": "DFST",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "local": "jest --chain=local",
+    "devnet": "jest --chain=devnet --deploy=false",
+    "deploy": "jest --chain=devnet --deploy=true"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
