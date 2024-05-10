@@ -7,6 +7,7 @@ import {
   UInt64,
   Cache,
   PublicKey,
+  setNumberOfWorkers,
 } from "o1js";
 
 import {
@@ -24,17 +25,16 @@ import { zkcloudworker } from "../src/worker";
 import { AddContract, AddProgram, limit, AddValue } from "../src/contract";
 import { contract, JWT, DEPLOYER } from "./config";
 import packageJson from "../package.json";
-const repo = packageJson.name;
-const developer = packageJson.author;
 
-const chainName = process.argv[2]?.split("=")[1] ?? "local";
-const shouldDeploy = process.argv[3]?.split("=")[1] ?? "true";
+const ONE_ELEMENTS_NUMBER = 1;
+const MANY_ELEMENTS_NUMBER = 1;
+const MANY_BATCH_SIZE = 2;
+setNumberOfWorkers(8);
 
-if (chainName !== "local" && chainName !== "devnet" && chainName !== "lightnet")
-  throw new Error("Invalid chain name");
-const chain: blockchain = chainName as blockchain;
-const deploy = shouldDeploy === "true";
-const useLocalCloudWorker = true;
+const { name: repo, author: developer } = packageJson;
+const { chain, compile, deploy, one, many, send, useLocalCloudWorker } =
+  processArguments();
+
 const api = new zkCloudWorkerClient({
   jwt: useLocalCloudWorker ? "local" : JWT,
   zkcloudworker,
@@ -43,9 +43,7 @@ const api = new zkCloudWorkerClient({
 
 let deployer: PrivateKey;
 let sender: PublicKey;
-const ONE_ELEMENTS_NUMBER = 2;
-const MANY_ELEMENTS_NUMBER = 1;
-const MANY_SIZE = 2;
+
 const oneValues: number[] = [];
 const manyValues: number[][] = [];
 
@@ -55,6 +53,7 @@ const contractPublicKey = contractPrivateKey.toPublicKey();
 const zkApp = new AddContract(contractPublicKey);
 let programVerificationKey: VerificationKey;
 let contractVerificationKey: VerificationKey;
+let blockchainInitialized = false;
 
 describe("Add Worker", () => {
   it(`should prepare data`, async () => {
@@ -65,7 +64,7 @@ describe("Add Worker", () => {
     }
     for (let i = 0; i < MANY_ELEMENTS_NUMBER; i++) {
       const values: number[] = [];
-      for (let j = 0; j < MANY_SIZE; j++) {
+      for (let j = 0; j < MANY_BATCH_SIZE; j++) {
         values.push(1 + Math.floor(Math.random() * (limit - 2)));
       }
       manyValues.push(values);
@@ -74,9 +73,14 @@ describe("Add Worker", () => {
   });
 
   it(`should initialize blockchain`, async () => {
+    expect(contractPrivateKey).toBeDefined();
+    expect(contractPrivateKey.toPublicKey().toBase58()).toBe(
+      contractPublicKey.toBase58()
+    );
+
     Memory.info("initializing blockchain");
 
-    if (chain === "local" || chain === "lighnet") {
+    if (chain === "local" || chain === "lightnet") {
       console.log("local chain:", chain);
       const { keys } = await initBlockchain(chain, 2);
       expect(keys.length).toBeGreaterThanOrEqual(2);
@@ -89,14 +93,7 @@ describe("Add Worker", () => {
     }
 
     process.env.DEPLOYER = deployer.toBase58();
-    if (deploy) {
-      expect(contractPrivateKey).toBeDefined();
-      expect(contractPrivateKey.toPublicKey().toBase58()).toBe(
-        contractPublicKey.toBase58()
-      );
-    }
 
-    console.log("blockchain initialized:", chain);
     console.log("contract address:", contractPublicKey.toBase58());
     sender = deployer.toPublicKey();
     console.log("sender:", sender.toBase58());
@@ -105,10 +102,12 @@ describe("Add Worker", () => {
     expect(sender).toBeDefined();
     expect(deployer.toPublicKey().toBase58()).toBe(sender.toBase58());
     Memory.info("blockchain initialized");
+    blockchainInitialized = true;
   });
 
-  if (deploy) {
+  if (compile) {
     it(`should compile contract`, async () => {
+      expect(blockchainInitialized).toBe(true);
       console.log("Analyzing contracts methods...");
       console.time("methods analyzed");
       const methods = [
@@ -163,8 +162,10 @@ describe("Add Worker", () => {
       );
       Memory.info("compiled");
     });
-
+  }
+  if (deploy) {
     it(`should deploy contract`, async () => {
+      expect(blockchainInitialized).toBe(true);
       console.log(`Deploying contract...`);
 
       await fetchMinaAccount({ publicKey: sender, force: true });
@@ -181,10 +182,12 @@ describe("Add Worker", () => {
       tx.sign([deployer, contractPrivateKey]);
       await sendTx(tx, "deploy");
       Memory.info("deployed");
-      await sleep(30000);
     });
+  }
 
-    it.skip(`should send first one tx`, async () => {
+  if (send) {
+    it(`should send first one tx`, async () => {
+      expect(blockchainInitialized).toBe(true);
       console.log(`Sending first one tx...`);
 
       await fetchMinaAccount({ publicKey: sender, force: true });
@@ -212,62 +215,135 @@ describe("Add Worker", () => {
     });
   }
 
-  it(`should send one transactions`, async () => {
-    console.time(`One txs sent`);
-    for (let i = 0; i < ONE_ELEMENTS_NUMBER; i++) {
-      const answer = await api.execute({
-        developer,
-        repo,
-        transactions: [],
-        task: "one",
-        args: JSON.stringify({
-          contractAddress: contractPublicKey.toBase58(),
-          isMany: false,
-          addValue: serializeFields(
-            AddValue.toFields(
-              new AddValue({
-                value: UInt64.from(oneValues[i]),
-                limit: UInt64.from(limit),
-              })
-            )
-          ),
-        }),
-        metadata: `one`,
-      });
-      console.log("answer:", answer);
-      expect(answer).toBeDefined();
-      expect(answer.success).toBe(true);
-      const jobId = answer.jobId;
-      expect(jobId).toBeDefined();
-      if (jobId === undefined) throw new Error("Job ID is undefined");
-      await api.waitForJobResult({ jobId, printLogs: true });
-    }
-    console.timeEnd(`One txs sent`);
-    Memory.info(`One txs sent`);
-  });
+  if (one) {
+    it(`should send one transactions`, async () => {
+      expect(blockchainInitialized).toBe(true);
+      console.time(`One txs sent`);
+      for (let i = 0; i < ONE_ELEMENTS_NUMBER; i++) {
+        console.log(`Sending one tx ${i + 1}/${ONE_ELEMENTS_NUMBER}...`);
+        const answer = await api.execute({
+          developer,
+          repo,
+          transactions: [],
+          task: "one",
+          args: JSON.stringify({
+            contractAddress: contractPublicKey.toBase58(),
+            isMany: false,
+            addValue: serializeFields(
+              AddValue.toFields(
+                new AddValue({
+                  value: UInt64.from(oneValues[i]),
+                  limit: UInt64.from(limit),
+                })
+              )
+            ),
+          }),
+          metadata: `one`,
+        });
+        console.log("answer:", answer);
+        expect(answer).toBeDefined();
+        expect(answer.success).toBe(true);
+        const jobId = answer.jobId;
+        expect(jobId).toBeDefined();
+        if (jobId === undefined) throw new Error("Job ID is undefined");
+        await api.waitForJobResult({ jobId, printLogs: true });
+      }
+      console.timeEnd(`One txs sent`);
+      Memory.info(`One txs sent`);
+    });
+  }
 });
 
-async function sendTx(tx: any, description?: string) {
-  const txSent = await tx.send();
-  if (txSent.errors.length > 0) {
-    console.error(
-      `${description ?? ""} tx error: hash: ${txSent.hash} status: ${
-        txSent.status
-      }  errors: ${txSent.errors}`
-    );
-    throw new Error("Transaction failed");
+function processArguments(): {
+  chain: blockchain;
+  compile: boolean;
+  deploy: boolean;
+  one: boolean;
+  many: boolean;
+  send: boolean;
+  useLocalCloudWorker: boolean;
+} {
+  function getArgument(arg: string): string | undefined {
+    const argument = process.argv.find((a) => a.startsWith("--" + arg));
+    return argument?.split("=")[1];
   }
-  console.log(
-    `${description ?? ""} tx sent: hash: ${txSent.hash} status: ${
-      txSent.status
-    }`
-  );
 
-  const txIncluded = await txSent.wait();
-  console.log(
-    `${description ?? ""} tx included into block: hash: ${
-      txIncluded.hash
-    } status: ${txIncluded.status}`
-  );
+  const chainName = getArgument("chain") ?? "local";
+  const shouldDeploy = getArgument("deploy") ?? "true";
+  const compile = getArgument("compile");
+  const one = getArgument("one") ?? "true";
+  const many = getArgument("many") ?? "true";
+  const send = getArgument("send") ?? "false";
+  const cloud = getArgument("cloud");
+
+  if (
+    chainName !== "local" &&
+    chainName !== "devnet" &&
+    chainName !== "lightnet" &&
+    chainName !== "zeko"
+  )
+    throw new Error("Invalid chain name");
+  return {
+    chain: chainName as blockchain,
+    compile: compile === "true" || shouldDeploy === "true" || send === "true",
+    deploy: shouldDeploy === "true",
+    one: one === "true",
+    many: many === "true",
+    send: send === "true",
+    useLocalCloudWorker: cloud
+      ? cloud === "local"
+      : chainName === "local" || chainName === "lightnet",
+  };
+}
+
+async function sendTx(
+  tx: Mina.Transaction<false, true> | Mina.Transaction<true, true>,
+  description?: string
+) {
+  try {
+    let txSent;
+    let sent = false;
+    while (!sent) {
+      txSent = await tx.safeSend();
+      if (txSent.status == "pending") {
+        sent = true;
+        console.log(
+          `${description ?? ""} tx sent: hash: ${txSent.hash} status: ${
+            txSent.status
+          }`
+        );
+      } else if (chain === "zeko") {
+        console.log("Retrying Zeko tx");
+        await sleep(10000);
+      } else {
+        console.log(
+          `${description ?? ""} tx NOT sent: hash: ${txSent?.hash} status: ${
+            txSent?.status
+          }`
+        );
+        return "Error sending transaction";
+      }
+    }
+    if (txSent === undefined) throw new Error("txSent is undefined");
+    if (txSent.errors.length > 0) {
+      console.error(
+        `${description ?? ""} tx error: hash: ${txSent.hash} status: ${
+          txSent.status
+        }  errors: ${txSent.errors}`
+      );
+    }
+
+    if (txSent.status === "pending") {
+      console.log(`Waiting for tx inclusion...`);
+      const txIncluded = await txSent.safeWait();
+      console.log(
+        `${description ?? ""} tx included into block: hash: ${
+          txIncluded.hash
+        } status: ${txIncluded.status}`
+      );
+    }
+  } catch (error) {
+    if (chain !== "zeko") console.error("Error sending tx", error);
+  }
   if (chain !== "local") await sleep(10000);
 }

@@ -38,3 +38,17 @@ Run:
 ```sh
 yarn test
 ```
+
+### Lightnet
+
+```sh
+zk lightnet start
+zk lightnet explorer
+yarn lightnet.deploy
+yarn lightnet.run
+```
+
+### Zeko
+
+Faucet: https://zeko.io/faucet
+Explorer: https://zekoscan.io/devnet/home
