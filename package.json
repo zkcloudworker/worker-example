@@ -4,7 +4,11 @@
   "author": "DFST",
   "scripts": {
     "test": "jest",
-    "local": "jest --chain=local",
+    "local": "jest --chain=local --deploy=true --send=true",
+    "lightnet.deploy": "jest --chain=lightnet --deploy=true --one=false --many=false",
+    "lightnet.run": "jest --chain=lightnet --deploy=false --one=true --many=true",
+    "zeko.deploy": "jest --chain=zeko --deploy=true --cloud=local --one=false --many=false",
+    "zeko.run": "jest --chain=zeko --deploy=false --cloud=local --one=true --many=true",
     "devnet": "jest --chain=devnet --deploy=false",
     "deploy": "jest --chain=devnet --deploy=true"
   },
@@ -19,7 +23,7 @@
   "packageManager": "yarn@4.2.1",
   "dependencies": {
     "o1js": "^1.1.0",
-    "zkcloudworker": "^0.5.6"
+    "zkcloudworker": "^0.5.8"
   },
   "jest": {
     "preset": "ts-jest",

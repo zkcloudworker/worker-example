@@ -17,7 +17,6 @@ import {
   AccountUpdate,
 } from "o1js";
 import { AddContract, AddProgram, AddProgramProof, AddValue } from "./contract";
-import { add } from "o1js/dist/node/lib/provable/gadgets/native-curve";
 
 export class AddWorker extends zkCloudWorker {
   static programVerificationKey: VerificationKey | undefined = undefined;
@@ -110,6 +109,43 @@ export class AddWorker extends zkCloudWorker {
     console.log("args", args);
     if (args.contractAddress === undefined)
       throw new Error("args.contractAddress is undefined");
+
+    switch (this.cloud.task) {
+      case "one":
+        return await this.sendTx({ ...args, isMany: false });
+
+      case "many":
+        return await this.sendTx({ ...args, isMany: true });
+
+      case "verifyProof":
+        return await this.verifyProof(args);
+
+      default:
+        throw new Error(`Unknown task: ${this.cloud.task}`);
+    }
+  }
+
+  private async verifyProof(args: { proof: string }): Promise<string> {
+    if (args.proof === undefined) throw new Error("args.proof is undefined");
+    const proof = (await AddProgramProof.fromJSON(
+      JSON.parse(args.proof) as JsonProof
+    )) as AddProgramProof;
+
+    await this.compile(false);
+    if (AddWorker.programVerificationKey === undefined)
+      throw new Error("verificationKey is undefined");
+
+    const ok = await verify(proof, AddWorker.programVerificationKey);
+    if (ok) return "Proof verified";
+    else return "Proof verification failed";
+  }
+
+  private async sendTx(args: {
+    proof?: string;
+    addValue?: string;
+    isMany: boolean;
+    contractAddress: string;
+  }): Promise<string> {
     if (args.isMany === undefined) throw new Error("args.isMany is undefined");
     const isMany = args.isMany as boolean;
     console.log("isMany:", isMany);
@@ -147,7 +183,7 @@ export class AddWorker extends zkCloudWorker {
     let tx;
     if (isMany) {
       const proof = (await AddProgramProof.fromJSON(
-        JSON.parse(args.proof) as JsonProof
+        JSON.parse(args.proof!) as JsonProof
       )) as AddProgramProof;
 
       tx = await Mina.transaction(
@@ -159,7 +195,7 @@ export class AddWorker extends zkCloudWorker {
       );
     } else {
       const addValue = AddValue.fromFields(
-        deserializeFields(args.addValue)
+        deserializeFields(args.addValue!)
       ) as AddValue;
       console.log("addValue:", {
         value: addValue.value.toJSON(),
@@ -181,23 +217,35 @@ export class AddWorker extends zkCloudWorker {
     try {
       await tx.prove();
       console.timeEnd("prepared tx");
-      const txSent = await tx.send();
-      console.log(`one tx sent: hash: ${txSent.hash} status: ${txSent.status}`);
-      if (txSent.status !== "pending") {
-        console.error("Error sending transaction");
-        return "Error sending transaction";
+      let txSent;
+      let sent = false;
+      while (!sent) {
+        txSent = await tx.safeSend();
+        if (txSent.status == "pending") {
+          sent = true;
+          console.log(
+            `${memo} tx sent: hash: ${txSent.hash} status: ${txSent.status}`
+          );
+        } else if (this.cloud.chain === "zeko") {
+          console.log("Retrying Zeko tx");
+          await sleep(10000);
+        } else {
+          console.log(
+            `${memo} tx NOT sent: hash: ${txSent?.hash} status: ${txSent?.status}`
+          );
+          return "Error sending transaction";
+        }
       }
-      if (this.cloud.isLocalCloud) {
-        const txIncluded = await txSent.wait();
+      if (this.cloud.isLocalCloud && txSent?.status === "pending") {
+        const txIncluded = await txSent.safeWait();
         console.log(
           `one tx included into block: hash: ${txIncluded.hash} status: ${txIncluded.status}`
         );
-        //await sleep(10000);
         await this.cloud.releaseDeployer([txIncluded.hash]);
         return txIncluded.hash;
       }
-      await this.cloud.releaseDeployer([txSent.hash]);
-      return txSent.hash;
+      await this.cloud.releaseDeployer(txSent?.hash ? [txSent.hash] : []);
+      return txSent?.hash ?? "Error sending transaction";
     } catch (error) {
       console.error("Error sending transaction", error);
       return "Error sending transaction";
