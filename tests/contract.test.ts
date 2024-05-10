@@ -27,8 +27,13 @@ import packageJson from "../package.json";
 const repo = packageJson.name;
 const developer = packageJson.author;
 
-const chain: blockchain = "local" as blockchain; // or 'devnet' or 'lightnet'
-const deploy = true;
+const chainName = process.argv[2]?.split("=")[1] ?? "local";
+const shouldDeploy = process.argv[3]?.split("=")[1] ?? "true";
+
+if (chainName !== "local" && chainName !== "devnet" && chainName !== "lightnet")
+  throw new Error("Invalid chain name");
+const chain: blockchain = chainName as blockchain;
+const deploy = shouldDeploy === "true";
 const useLocalCloudWorker = true;
 const api = new zkCloudWorkerClient({
   jwt: useLocalCloudWorker ? "local" : JWT,
@@ -44,7 +49,7 @@ const MANY_SIZE = 2;
 const oneValues: number[] = [];
 const manyValues: number[][] = [];
 
-const contractPrivateKey = PrivateKey.random(); //contract.contractPrivateKey;
+const contractPrivateKey = contract.contractPrivateKey;
 const contractPublicKey = contractPrivateKey.toPublicKey();
 
 const zkApp = new AddContract(contractPublicKey);
@@ -70,8 +75,9 @@ describe("Add Worker", () => {
 
   it(`should initialize blockchain`, async () => {
     Memory.info("initializing blockchain");
-    console.log("chain:", chain);
+
     if (chain === "local" || chain === "lighnet") {
+      console.log("local chain:", chain);
       const { keys } = await initBlockchain(chain, 2);
       expect(keys.length).toBeGreaterThanOrEqual(2);
       if (keys.length < 2) throw new Error("Invalid keys");
