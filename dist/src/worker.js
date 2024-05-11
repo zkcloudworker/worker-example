@@ -61,7 +61,6 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
         return JSON.stringify(proof.toJSON(), null, 2);
     }
     async execute(transactions) {
-        await (0, zkcloudworker_1.initBlockchain)(this.cloud.chain);
         if (this.cloud.args === undefined)
             throw new Error("this.cloud.args is undefined");
         const args = JSON.parse(this.cloud.args);
@@ -110,11 +109,14 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
         console.log("Address", address.toBase58());
         const contractAddress = o1js_1.PublicKey.fromBase58(args.contractAddress);
         const zkApp = new contract_1.AddContract(contractAddress);
-        await this.compile();
         console.log(`Sending tx...`);
         console.time("prepared tx");
         const memo = isMany ? "many" : "one";
-        const deployer = await this.cloud.getDeployer();
+        const deployerKeyPair = await this.cloud.getDeployer();
+        if (deployerKeyPair === undefined)
+            throw new Error("deployerKeyPair is undefined");
+        const deployer = o1js_1.PrivateKey.fromBase58(deployerKeyPair.privateKey);
+        console.log("cloud deployer:", deployer.toBase58());
         if (deployer === undefined)
             throw new Error("deployer is undefined");
         const sender = deployer.toPublicKey();
@@ -126,6 +128,9 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
             publicKey: sender,
             force: true,
         });
+        console.log("sender:", sender.toBase58());
+        console.log("Sender balance:", await (0, zkcloudworker_1.accountBalanceMina)(sender));
+        await this.compile();
         let tx;
         if (isMany) {
             const proof = (await contract_1.AddProgramProof.fromJSON(JSON.parse(args.proof)));
@@ -172,10 +177,16 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
             if (this.cloud.isLocalCloud && txSent?.status === "pending") {
                 const txIncluded = await txSent.safeWait();
                 console.log(`one tx included into block: hash: ${txIncluded.hash} status: ${txIncluded.status}`);
-                await this.cloud.releaseDeployer([txIncluded.hash]);
+                await this.cloud.releaseDeployer({
+                    publicKey: deployerKeyPair.publicKey,
+                    txsHashes: [txIncluded.hash],
+                });
                 return txIncluded.hash;
             }
-            await this.cloud.releaseDeployer(txSent?.hash ? [txSent.hash] : []);
+            await this.cloud.releaseDeployer({
+                publicKey: deployerKeyPair.publicKey,
+                txsHashes: txSent?.hash ? [txSent.hash] : [],
+            });
             return txSent?.hash ?? "Error sending transaction";
         }
         catch (error) {
