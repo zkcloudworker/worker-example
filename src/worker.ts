@@ -6,6 +6,7 @@ import {
   sleep,
   deserializeFields,
   fetchMinaAccount,
+  accountBalanceMina,
 } from "zkcloudworker";
 import {
   verify,
@@ -106,7 +107,7 @@ export class AddWorker extends zkCloudWorker {
     if (this.cloud.args === undefined)
       throw new Error("this.cloud.args is undefined");
     const args = JSON.parse(this.cloud.args);
-    console.log("args", args);
+    //console.log("args", args);
     if (args.contractAddress === undefined)
       throw new Error("args.contractAddress is undefined");
 
@@ -161,13 +162,23 @@ export class AddWorker extends zkCloudWorker {
     console.log("Address", address.toBase58());
     const contractAddress = PublicKey.fromBase58(args.contractAddress);
     const zkApp = new AddContract(contractAddress);
-    await this.compile();
 
     console.log(`Sending tx...`);
     console.time("prepared tx");
     const memo = isMany ? "many" : "one";
 
-    const deployer = await this.cloud.getDeployer();
+    console.log("Using cloud deployer...");
+    /*
+    const deployer = PrivateKey.fromBase58(
+      "EKFDvpBMGGa1bGrE9BhNLzr4VEBopt9ANfwTzE5Z3yqSBegiUUhk"
+    );
+    */
+    const deployerString = this.cloud.metadata;
+    if (deployerString === undefined)
+      throw new Error("deployerString is undefined");
+    const deployer = PrivateKey.fromBase58(deployerString);
+    console.log("cloud deployer:", deployer.toBase58());
+    //await this.cloud.getDeployer();
     if (deployer === undefined) throw new Error("deployer is undefined");
     const sender = deployer.toPublicKey();
 
@@ -179,6 +190,10 @@ export class AddWorker extends zkCloudWorker {
       publicKey: sender,
       force: true,
     });
+
+    console.log("sender:", sender.toBase58());
+    console.log("Sender balance:", await accountBalanceMina(sender));
+    await this.compile();
 
     let tx;
     if (isMany) {

@@ -1,16 +1,16 @@
 {
   "name": "worker-example",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "author": "DFST",
   "scripts": {
     "test": "jest",
-    "local": "jest --chain=local --deploy=true --send=true",
+    "local": "jest --chain=local --deploy=true --send=false --one=false --many=true",
     "lightnet.deploy": "jest --chain=lightnet --deploy=true --one=false --many=false",
     "lightnet.run": "jest --chain=lightnet --deploy=false --one=true --many=true",
     "zeko.deploy": "jest --chain=zeko --deploy=true --cloud=local --one=false --many=false",
-    "zeko.run": "jest --chain=zeko --deploy=false --cloud=local --one=true --many=true",
-    "devnet": "jest --chain=devnet --deploy=false",
-    "deploy": "jest --chain=devnet --deploy=true"
+    "zeko.run": "jest --chain=zeko --deploy=false --cloud=local --one=false --many=true",
+    "devnet.deploy": "jest --chain=devnet --deploy=true --cloud=local --one=false --many=false",
+    "devnet.run": "jest --chain=devnet --deploy=false --one=true --many=false --send=false"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
