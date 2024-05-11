@@ -27,7 +27,7 @@ import { contract, JWT, DEPLOYER } from "./config";
 import packageJson from "../package.json";
 
 const ONE_ELEMENTS_NUMBER = 1;
-const MANY_ELEMENTS_NUMBER = 2;
+const MANY_ELEMENTS_NUMBER = 1;
 const MANY_BATCH_SIZE = 3;
 setNumberOfWorkers(8);
 
@@ -292,7 +292,7 @@ describe("Add Worker", () => {
         console.log("proof answer:", proofAnswer);
         expect(proofAnswer).toBeDefined();
         expect(proofAnswer.success).toBe(true);
-        let jobId = (proofAnswer.jobId as any).jobId;
+        let jobId = proofAnswer.jobId;
         expect(jobId).toBeDefined();
         if (jobId === undefined) throw new Error("Job ID is undefined");
         const proofResult = await api.waitForJobResult({

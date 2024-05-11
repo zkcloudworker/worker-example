@@ -167,18 +167,11 @@ export class AddWorker extends zkCloudWorker {
     console.time("prepared tx");
     const memo = isMany ? "many" : "one";
 
-    console.log("Using cloud deployer...");
-    /*
-    const deployer = PrivateKey.fromBase58(
-      "EKFDvpBMGGa1bGrE9BhNLzr4VEBopt9ANfwTzE5Z3yqSBegiUUhk"
-    );
-    */
-    const deployerString = this.cloud.metadata;
-    if (deployerString === undefined)
-      throw new Error("deployerString is undefined");
-    const deployer = PrivateKey.fromBase58(deployerString);
+    const deployerKeyPair = await this.cloud.getDeployer();
+    if (deployerKeyPair === undefined)
+      throw new Error("deployerKeyPair is undefined");
+    const deployer = PrivateKey.fromBase58(deployerKeyPair.privateKey);
     console.log("cloud deployer:", deployer.toBase58());
-    //await this.cloud.getDeployer();
     if (deployer === undefined) throw new Error("deployer is undefined");
     const sender = deployer.toPublicKey();
 
@@ -256,10 +249,16 @@ export class AddWorker extends zkCloudWorker {
         console.log(
           `one tx included into block: hash: ${txIncluded.hash} status: ${txIncluded.status}`
         );
-        await this.cloud.releaseDeployer([txIncluded.hash]);
+        await this.cloud.releaseDeployer({
+          publicKey: deployerKeyPair.publicKey,
+          txsHashes: [txIncluded.hash],
+        });
         return txIncluded.hash;
       }
-      await this.cloud.releaseDeployer(txSent?.hash ? [txSent.hash] : []);
+      await this.cloud.releaseDeployer({
+        publicKey: deployerKeyPair.publicKey,
+        txsHashes: txSent?.hash ? [txSent.hash] : [],
+      });
       return txSent?.hash ?? "Error sending transaction";
     } catch (error) {
       console.error("Error sending transaction", error);

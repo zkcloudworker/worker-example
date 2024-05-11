@@ -222,7 +222,7 @@ let blockchainInitialized = false;
                 console.log("proof answer:", proofAnswer);
                 (0, globals_1.expect)(proofAnswer).toBeDefined();
                 (0, globals_1.expect)(proofAnswer.success).toBe(true);
-                let jobId = proofAnswer.jobId;
+                let jobId = proofAnswer.jobId.jobId;
                 (0, globals_1.expect)(jobId).toBeDefined();
                 if (jobId === undefined)
                     throw new Error("Job ID is undefined");
