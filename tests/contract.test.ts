@@ -27,8 +27,8 @@ import { contract, JWT, DEPLOYER } from "./config";
 import packageJson from "../package.json";
 
 const ONE_ELEMENTS_NUMBER = 1;
-const MANY_ELEMENTS_NUMBER = 1;
-const MANY_BATCH_SIZE = 2;
+const MANY_ELEMENTS_NUMBER = 2;
+const MANY_BATCH_SIZE = 3;
 setNumberOfWorkers(8);
 
 const { name: repo, author: developer } = packageJson;
@@ -246,10 +246,114 @@ describe("Add Worker", () => {
         const jobId = answer.jobId;
         expect(jobId).toBeDefined();
         if (jobId === undefined) throw new Error("Job ID is undefined");
-        await api.waitForJobResult({ jobId, printLogs: true });
+        const oneResult = await api.waitForJobResult({
+          jobId,
+          printLogs: true,
+        });
+        console.log("One result:", oneResult.result.result);
       }
       console.timeEnd(`One txs sent`);
       Memory.info(`One txs sent`);
+    });
+  }
+
+  if (many) {
+    it(`should send transactions with recursive proofs`, async () => {
+      expect(blockchainInitialized).toBe(true);
+      console.time(`Many txs sent`);
+      for (let i = 0; i < MANY_ELEMENTS_NUMBER; i++) {
+        console.log(`Sending many tx ${i + 1}/${MANY_ELEMENTS_NUMBER}...`);
+        const transactions: string[] = [];
+        for (let j = 0; j < MANY_BATCH_SIZE; j++) {
+          transactions.push(
+            JSON.stringify({
+              addValue: serializeFields(
+                AddValue.toFields(
+                  new AddValue({
+                    value: UInt64.from(manyValues[i][j]),
+                    limit: UInt64.from(limit),
+                  })
+                )
+              ),
+            })
+          );
+        }
+
+        const proofAnswer = await api.recursiveProof({
+          developer,
+          repo,
+          transactions,
+          task: "proof",
+          args: JSON.stringify({
+            contractAddress: contractPublicKey.toBase58(),
+          }),
+          metadata: `proof`,
+        });
+        console.log("proof answer:", proofAnswer);
+        expect(proofAnswer).toBeDefined();
+        expect(proofAnswer.success).toBe(true);
+        let jobId = (proofAnswer.jobId as any).jobId;
+        expect(jobId).toBeDefined();
+        if (jobId === undefined) throw new Error("Job ID is undefined");
+        const proofResult = await api.waitForJobResult({
+          jobId,
+          printLogs: true,
+        });
+        //console.log("Proof result", proofResult);
+        expect(proofResult).toBeDefined();
+        expect(proofResult.success).toBe(true);
+        expect(proofResult.result).toBeDefined();
+        const proof = proofResult.result.result;
+
+        const verifyAnswer = await api.execute({
+          developer,
+          repo,
+          transactions: [],
+          task: "verifyProof",
+          args: JSON.stringify({
+            contractAddress: contractPublicKey.toBase58(),
+            proof,
+          }),
+          metadata: `verify proof`,
+        });
+        console.log("verifyAnswer:", verifyAnswer);
+        expect(verifyAnswer).toBeDefined();
+        expect(verifyAnswer.success).toBe(true);
+        jobId = verifyAnswer.jobId;
+        expect(jobId).toBeDefined();
+        if (jobId === undefined) throw new Error("Job ID is undefined");
+        const verifyResult = await api.waitForJobResult({
+          jobId,
+          printLogs: true,
+        });
+        console.log("Verify result:", verifyResult.result.result);
+
+        const answer = await api.execute({
+          developer,
+          repo,
+          transactions: [],
+          task: "many",
+          args: JSON.stringify({
+            contractAddress: contractPublicKey.toBase58(),
+            isMany: true,
+            proof,
+          }),
+          metadata: `many`,
+        });
+        console.log("answer:", answer);
+        expect(answer).toBeDefined();
+        expect(answer.success).toBe(true);
+        jobId = answer.jobId;
+        expect(jobId).toBeDefined();
+        if (jobId === undefined) throw new Error("Job ID is undefined");
+        const manyResult = await api.waitForJobResult({
+          jobId,
+          printLogs: true,
+        });
+        console.log("Many result:", manyResult.result.result);
+      }
+      console.timeEnd(`Many txs sent`);
+      Memory.info(`Many txs sent`);
     });
   }
 });

@@ -1,7 +1,15 @@
-import { Cloud, zkCloudWorker } from "zkcloudworker";
-import { ExampleWorker } from "./src/worker";
+import { Cloud, zkCloudWorker, initBlockchain } from "zkcloudworker";
+import { initializeBindings } from "o1js";
+import { AddWorker } from "./src/worker";
+import packageJson from "./package.json";
 
-// Keep this for compatibility
 export async function zkcloudworker(cloud: Cloud): Promise<zkCloudWorker> {
-  return new ExampleWorker(cloud);
+  console.log(
+    `starting worker example version ${
+      packageJson.version ?? "unknown"
+    } on chain ${cloud.chain}`
+  );
+  await initializeBindings();
+  await initBlockchain(cloud.chain);
+  return new AddWorker(cloud);
 }
