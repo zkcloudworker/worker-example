@@ -92,7 +92,8 @@ describe("Add Worker", () => {
       deployer = PrivateKey.fromBase58(DEPLOYER);
     }
 
-    process.env.DEPLOYER = deployer.toBase58();
+    process.env.DEPLOYER_PRIVATE_KEY = deployer.toBase58();
+    process.env.DEPLOYER_PUBLIC_KEY = deployer.toPublicKey().toBase58();
 
     console.log("contract address:", contractPublicKey.toBase58());
     sender = deployer.toPublicKey();

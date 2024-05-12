@@ -1,8 +1,9 @@
 import { zkCloudWorker, Cloud, DeployedSmartContract } from "zkcloudworker";
-import { VerificationKey } from "o1js";
+import { VerificationKey, Cache } from "o1js";
 export declare class AddWorker extends zkCloudWorker {
     static programVerificationKey: VerificationKey | undefined;
     static contractVerificationKey: VerificationKey | undefined;
+    readonly cache: Cache;
     constructor(cloud: Cloud);
     deployedContracts(): Promise<DeployedSmartContract[]>;
     private compile;
