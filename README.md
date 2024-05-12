@@ -95,6 +95,7 @@ yarn zeko.run
 ```
 
 Faucet: https://zeko.io/faucet
+
 Explorer: https://zekoscan.io/devnet/home
 
 ## Logs
