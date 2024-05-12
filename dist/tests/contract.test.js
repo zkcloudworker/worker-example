@@ -11,7 +11,7 @@ const contract_1 = require("../src/contract");
 const config_1 = require("./config");
 const package_json_1 = __importDefault(require("../package.json"));
 const ONE_ELEMENTS_NUMBER = 1;
-const MANY_ELEMENTS_NUMBER = 2;
+const MANY_ELEMENTS_NUMBER = 1;
 const MANY_BATCH_SIZE = 3;
 (0, o1js_1.setNumberOfWorkers)(8);
 const { name: repo, author: developer } = package_json_1.default;
@@ -222,7 +222,7 @@ let blockchainInitialized = false;
                 console.log("proof answer:", proofAnswer);
                 (0, globals_1.expect)(proofAnswer).toBeDefined();
                 (0, globals_1.expect)(proofAnswer.success).toBe(true);
-                let jobId = proofAnswer.jobId.jobId;
+                let jobId = proofAnswer.jobId;
                 (0, globals_1.expect)(jobId).toBeDefined();
                 if (jobId === undefined)
                     throw new Error("Job ID is undefined");

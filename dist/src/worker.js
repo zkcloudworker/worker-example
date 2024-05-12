@@ -7,6 +7,7 @@ const contract_1 = require("./contract");
 class AddWorker extends zkcloudworker_1.zkCloudWorker {
     constructor(cloud) {
         super(cloud);
+        this.cache = o1js_1.Cache.FileSystem(this.cloud.cache);
     }
     async deployedContracts() {
         throw new Error("not implemented");
@@ -16,7 +17,7 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
         if (AddWorker.programVerificationKey === undefined) {
             console.time("compiled AddProgram");
             AddWorker.programVerificationKey = (await contract_1.AddProgram.compile({
-                cache: this.cloud.cache,
+                cache: this.cache,
             })).verificationKey;
             console.timeEnd("compiled AddProgram");
         }
@@ -27,7 +28,7 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
         if (AddWorker.contractVerificationKey === undefined) {
             console.time("compiled AddContract");
             AddWorker.contractVerificationKey = (await contract_1.AddContract.compile({
-                cache: this.cloud.cache,
+                cache: this.cache,
             })).verificationKey;
             console.timeEnd("compiled AddContract");
         }

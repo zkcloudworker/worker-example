@@ -16,15 +16,18 @@ import {
   Mina,
   PrivateKey,
   AccountUpdate,
+  Cache,
 } from "o1js";
 import { AddContract, AddProgram, AddProgramProof, AddValue } from "./contract";
 
 export class AddWorker extends zkCloudWorker {
   static programVerificationKey: VerificationKey | undefined = undefined;
   static contractVerificationKey: VerificationKey | undefined = undefined;
+  readonly cache: Cache;
 
   constructor(cloud: Cloud) {
     super(cloud);
+    this.cache = Cache.FileSystem(this.cloud.cache);
   }
 
   public async deployedContracts(): Promise<DeployedSmartContract[]> {
@@ -37,7 +40,7 @@ export class AddWorker extends zkCloudWorker {
       console.time("compiled AddProgram");
       AddWorker.programVerificationKey = (
         await AddProgram.compile({
-          cache: this.cloud.cache,
+          cache: this.cache,
         })
       ).verificationKey;
       console.timeEnd("compiled AddProgram");
@@ -52,7 +55,7 @@ export class AddWorker extends zkCloudWorker {
       console.time("compiled AddContract");
       AddWorker.contractVerificationKey = (
         await AddContract.compile({
-          cache: this.cloud.cache,
+          cache: this.cache,
         })
       ).verificationKey;
       console.timeEnd("compiled AddContract");
