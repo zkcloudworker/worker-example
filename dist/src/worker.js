@@ -13,26 +13,34 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
         throw new Error("not implemented");
     }
     async compile(compileSmartContracts = true) {
-        console.time("compiled");
-        if (AddWorker.programVerificationKey === undefined) {
-            console.time("compiled AddProgram");
-            AddWorker.programVerificationKey = (await contract_1.AddProgram.compile({
-                cache: this.cache,
-            })).verificationKey;
-            console.timeEnd("compiled AddProgram");
-        }
-        if (compileSmartContracts === false) {
+        try {
+            console.time("compiled");
+            if (AddWorker.programVerificationKey === undefined) {
+                console.time("compiled AddProgram");
+                AddWorker.programVerificationKey = (await contract_1.AddProgram.compile({
+                    cache: this.cache,
+                })).verificationKey;
+                console.timeEnd("compiled AddProgram");
+            }
+            if (compileSmartContracts === false) {
+                console.timeEnd("compiled");
+                return;
+            }
+            if (AddWorker.contractVerificationKey === undefined) {
+                console.time("compiled AddContract");
+                AddWorker.contractVerificationKey = (await contract_1.AddContract.compile({
+                    cache: this.cache,
+                })).verificationKey;
+                console.timeEnd("compiled AddContract");
+            }
             console.timeEnd("compiled");
-            return;
         }
-        if (AddWorker.contractVerificationKey === undefined) {
-            console.time("compiled AddContract");
-            AddWorker.contractVerificationKey = (await contract_1.AddContract.compile({
-                cache: this.cache,
-            })).verificationKey;
-            console.timeEnd("compiled AddContract");
+        catch (error) {
+            console.error("Error in compile, restarting container", error);
+            // Restarting the container, see https://github.com/o1-labs/o1js/issues/1651
+            await this.cloud.forceWorkerRestart();
+            throw error;
         }
-        console.timeEnd("compiled");
     }
     async create(transaction) {
         const msg = `proof created`;

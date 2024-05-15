@@ -1,21 +1,21 @@
 {
     "name": "worker-example",
-    "version": "0.2.0",
+    "version": "0.2.5",
     "author": "DFST",
     "scripts": {
         "test": "jest",
-        "local": "jest --chain=local --deploy=true --send=false --one=false --many=true",
-        "lightnet.deploy": "jest --chain=lightnet --deploy=true --one=false --many=false",
-        "lightnet.run": "jest --chain=lightnet --deploy=false --one=true --many=true",
+        "local": "jest --chain=local --cloud=local --deploy=true --send=false --one=true --many=true",
+        "lightnet.deploy": "jest --chain=lightnet --cloud=local --deploy=true --one=false --many=false",
+        "lightnet.run": "jest --chain=lightnet --cloud=local --deploy=false --one=true --many=true",
         "zeko.deploy": "jest --chain=zeko --deploy=true --cloud=local --one=false --many=false",
         "zeko.run": "jest --chain=zeko --deploy=false --one=true --many=true",
-        "devnet.deploy": "jest --chain=devnet --deploy=true --cloud=local --one=false --many=false",
-        "devnet.run": "jest --chain=devnet --deploy=false --one=false --many=true --send=false"
+        "devnet.deploy": "jest --chain=devnet --cloud=local --deploy=true --one=false --many=false",
+        "devnet.run": "jest --chain=devnet --deploy=false --one=true --many=true --send=false"
     },
     "devDependencies": {
         "@jest/globals": "^29.7.0",
         "@types/jest": "^29.5.12",
-        "@types/node": "^20.12.11",
+        "@types/node": "^20.12.12",
         "jest": "^29.7.0",
         "ts-jest": "^29.1.2",
         "typescript": "^5.4.5"
@@ -23,7 +23,7 @@
     "packageManager": "yarn@4.2.1",
     "dependencies": {
         "o1js": "^1.1.0",
-        "zkcloudworker": "^0.7.0"
+        "zkcloudworker": "^0.7.11"
     },
     "jest": {
         "preset": "ts-jest",
