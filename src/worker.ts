@@ -35,32 +35,39 @@ export class AddWorker extends zkCloudWorker {
   }
 
   private async compile(compileSmartContracts: boolean = true): Promise<void> {
-    console.time("compiled");
-    if (AddWorker.programVerificationKey === undefined) {
-      console.time("compiled AddProgram");
-      AddWorker.programVerificationKey = (
-        await AddProgram.compile({
-          cache: this.cache,
-        })
-      ).verificationKey;
-      console.timeEnd("compiled AddProgram");
-    }
+    try {
+      console.time("compiled");
+      if (AddWorker.programVerificationKey === undefined) {
+        console.time("compiled AddProgram");
+        AddWorker.programVerificationKey = (
+          await AddProgram.compile({
+            cache: this.cache,
+          })
+        ).verificationKey;
+        console.timeEnd("compiled AddProgram");
+      }
 
-    if (compileSmartContracts === false) {
+      if (compileSmartContracts === false) {
+        console.timeEnd("compiled");
+        return;
+      }
+
+      if (AddWorker.contractVerificationKey === undefined) {
+        console.time("compiled AddContract");
+        AddWorker.contractVerificationKey = (
+          await AddContract.compile({
+            cache: this.cache,
+          })
+        ).verificationKey;
+        console.timeEnd("compiled AddContract");
+      }
       console.timeEnd("compiled");
-      return;
+    } catch (error) {
+      console.error("Error in compile, restarting container", error);
+      // Restarting the container, see https://github.com/o1-labs/o1js/issues/1651
+      await this.cloud.forceWorkerRestart();
+      throw error;
     }
-
-    if (AddWorker.contractVerificationKey === undefined) {
-      console.time("compiled AddContract");
-      AddWorker.contractVerificationKey = (
-        await AddContract.compile({
-          cache: this.cache,
-        })
-      ).verificationKey;
-      console.timeEnd("compiled AddContract");
-    }
-    console.timeEnd("compiled");
   }
 
   public async create(transaction: string): Promise<string | undefined> {

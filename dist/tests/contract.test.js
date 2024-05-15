@@ -64,7 +64,8 @@ let blockchainInitialized = false;
             await (0, zkcloudworker_1.initBlockchain)(chain);
             deployer = o1js_1.PrivateKey.fromBase58(config_1.DEPLOYER);
         }
-        process.env.DEPLOYER = deployer.toBase58();
+        process.env.DEPLOYER_PRIVATE_KEY = deployer.toBase58();
+        process.env.DEPLOYER_PUBLIC_KEY = deployer.toPublicKey().toBase58();
         console.log("contract address:", contractPublicKey.toBase58());
         sender = deployer.toPublicKey();
         console.log("sender:", sender.toBase58());

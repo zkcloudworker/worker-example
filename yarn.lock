@@ -854,12 +854,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^20.12.11":
+"@types/node@npm:*":
   version: 20.12.11
   resolution: "@types/node@npm:20.12.11"
   dependencies:
     undici-types: "npm:~5.26.4"
   checksum: 10c0/efaa7b08c50ba6e6982ac7d531ba08d5935539ba76e954807df1ff9382a319ead7e003ccaca5ad7cf33ecf53f212507f7c1f2794bd2ff52df6365fef21f6e1fb
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^20.12.12":
+  version: 20.12.12
+  resolution: "@types/node@npm:20.12.12"
+  dependencies:
+    undici-types: "npm:~5.26.4"
+  checksum: 10c0/f374b763c744e8f16e4f38cf6e2c0eef31781ec9228c9e43a6f267880fea420fab0a238b59f10a7cb3444e49547c5e3785787e371fc242307310995b21988812
   languageName: node
   linkType: hard
 
@@ -3692,12 +3701,12 @@ __metadata:
   dependencies:
     "@jest/globals": "npm:^29.7.0"
     "@types/jest": "npm:^29.5.12"
-    "@types/node": "npm:^20.12.11"
+    "@types/node": "npm:^20.12.12"
     jest: "npm:^29.7.0"
     o1js: "npm:^1.1.0"
     ts-jest: "npm:^29.1.2"
     typescript: "npm:^5.4.5"
-    zkcloudworker: "npm:^0.7.2"
+    zkcloudworker: "npm:^0.7.11"
   languageName: unknown
   linkType: soft
 
@@ -3790,15 +3799,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zkcloudworker@npm:^0.7.2":
-  version: 0.7.2
-  resolution: "zkcloudworker@npm:0.7.2"
+"zkcloudworker@npm:^0.7.11":
+  version: 0.7.11
+  resolution: "zkcloudworker@npm:0.7.11"
   dependencies:
     axios: "npm:^1.6.8"
     chalk: "npm:^4.1.2"
     nats: "npm:^2.24.0"
   peerDependencies:
     o1js: ^1.1.0
-  checksum: 10c0/d44506db8a21b9505c3ef2e80c6cae7ce0842fd133b70aa9fe0453fc5c3c801ea4a9320ba2d25203747a834f7e2ce258709f9ae78a328da3077aaddf40384f82
+  checksum: 10c0/4527f7f393d7ce58bf9f761c712d9b39caf847ab3b0fb3256a21164657e4c8f5c8b5dfeed7de5f62c6be784d137764f60f8fe947465ce96acff0fc68c610bbb8
   languageName: node
   linkType: hard
