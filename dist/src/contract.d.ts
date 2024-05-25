@@ -179,14 +179,14 @@ declare const AddProgramProof_base: {
         proof: unknown;
         publicInput: undefined;
         publicOutput: AddValue;
-        maxProofsVerified: 0 | 1 | 2;
+        maxProofsVerified: 0 | 2 | 1;
     }): {
         verify(): void;
         verifyIf(condition: import("o1js/dist/node/lib/provable/bool").Bool): void;
         publicInput: undefined;
         publicOutput: AddValue;
         proof: unknown;
-        maxProofsVerified: 0 | 1 | 2;
+        maxProofsVerified: 0 | 2 | 1;
         shouldVerify: import("o1js/dist/node/lib/provable/bool").Bool;
         toJSON(): import("o1js").JsonProof;
     };
@@ -209,7 +209,7 @@ declare const AddProgramProof_base: {
     } & {
         prototype: import("o1js").Proof<unknown, unknown>;
     }>(this: S, { maxProofsVerified, proof: proofString, publicInput: publicInputJson, publicOutput: publicOutputJson, }: import("o1js").JsonProof): Promise<import("o1js").Proof<import("o1js").InferProvable<S["publicInputType"]>, import("o1js").InferProvable<S["publicOutputType"]>>>;
-    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 1 | 2, domainLog2?: number | undefined): Promise<import("o1js").Proof<Input, OutPut>>;
+    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 2 | 1, domainLog2?: number | undefined): Promise<import("o1js").Proof<Input, OutPut>>;
 };
 export declare class AddProgramProof extends AddProgramProof_base {
 }
