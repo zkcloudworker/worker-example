@@ -863,12 +863,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^20.12.12":
-  version: 20.12.12
-  resolution: "@types/node@npm:20.12.12"
+"@types/node@npm:^20.14.5":
+  version: 20.14.5
+  resolution: "@types/node@npm:20.14.5"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10c0/f374b763c744e8f16e4f38cf6e2c0eef31781ec9228c9e43a6f267880fea420fab0a238b59f10a7cb3444e49547c5e3785787e371fc242307310995b21988812
+  checksum: 10c0/06a8c304b5f7f190d4497807dc67ad09ee7b14ea2996bfdc823553c624698d8cab1ef9d16f8b764f20cb9eb11caa0e832787741e9ef70e1c89d620797ab28436
   languageName: node
   linkType: hard
 
@@ -2910,9 +2910,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"o1js@npm:^1.3.0":
-  version: 1.3.0
-  resolution: "o1js@npm:1.3.0"
+"o1js@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "o1js@npm:1.3.1"
   dependencies:
     blakejs: "npm:1.2.1"
     cachedir: "npm:^2.4.0"
@@ -2922,7 +2922,7 @@ __metadata:
     tslib: "npm:^2.3.0"
   bin:
     snarky-run: src/build/run.js
-  checksum: 10c0/e3a8f347fda9914dd02d124f1cfcd024662455a6482a0dda4fef3e4381448cfe7a84dff6d63b1363adf17497935dfa136cafc866b572b5c98dd21bdb3082cf12
+  checksum: 10c0/1f6fea04ada32c7574c1097535631f525726305f23b1a9ad7c0eefcb7a6d64ad03732439c3a202a5f10ca60ba18323ffbf5d0148c791d1982c234dfc0455637a
   languageName: node
   linkType: hard
 
@@ -3509,9 +3509,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-jest@npm:^29.1.3":
-  version: 29.1.3
-  resolution: "ts-jest@npm:29.1.3"
+"ts-jest@npm:^29.1.5":
+  version: 29.1.5
+  resolution: "ts-jest@npm:29.1.5"
   dependencies:
     bs-logger: "npm:0.x"
     fast-json-stable-stringify: "npm:2.x"
@@ -3541,7 +3541,7 @@ __metadata:
       optional: true
   bin:
     ts-jest: cli.js
-  checksum: 10c0/7810882f53c7d722dfcd9fbe65c1c80258ec4bd216a21448f27759f2f06d57a2f3f2472e1efe4a5e29fd4064dce07a93c8dbf3b13e77dac0e32419a30756f8f5
+  checksum: 10c0/5c1baf4d23342e138745d6283ae530b07957b779b103abc99fd6713e1fd7fc65d4a4638695d5a76e177f78c46c80ec53598b365f245997db5d3d00617940bf87
   languageName: node
   linkType: hard
 
@@ -3704,12 +3704,12 @@ __metadata:
   dependencies:
     "@jest/globals": "npm:^29.7.0"
     "@types/jest": "npm:^29.5.12"
-    "@types/node": "npm:^20.12.12"
+    "@types/node": "npm:^20.14.5"
     jest: "npm:^29.7.0"
-    o1js: "npm:^1.3.0"
-    ts-jest: "npm:^29.1.3"
+    o1js: "npm:^1.3.1"
+    ts-jest: "npm:^29.1.5"
     typescript: "npm:^5.4.5"
-    zkcloudworker: "npm:^0.9.0"
+    zkcloudworker: "npm:^0.11.2"
   languageName: unknown
   linkType: soft
 
@@ -3802,15 +3802,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zkcloudworker@npm:^0.9.0":
-  version: 0.9.0
-  resolution: "zkcloudworker@npm:0.9.0"
+"zkcloudworker@npm:^0.11.2":
+  version: 0.11.2
+  resolution: "zkcloudworker@npm:0.11.2"
   dependencies:
     axios: "npm:^1.7.2"
     chalk: "npm:^4.1.2"
     nats: "npm:^2.26.0"
   peerDependencies:
     o1js: ^1.3.0
-  checksum: 10c0/a107c1e8ada2fc764323968f8b6d32e341c9834add5b8cf6eed8a0ff98ee5b1a9b1386cdef9c769b9750c8199fa69cc0317775b6336cf673589c644c97c38530
+  checksum: 10c0/93eb28239b220cb7b0ab7f0b42701c69f346bc76257b4b1736281cc19984418392662f7d1afae5caef7dd0caeca476cadd7a18af8b5478b1a45cdbc6747e9e38
   languageName: node
   linkType: hard

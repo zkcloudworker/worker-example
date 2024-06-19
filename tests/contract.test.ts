@@ -32,7 +32,7 @@ const MANY_BATCH_SIZE = 3;
 setNumberOfWorkers(8);
 
 const { name: repo, author: developer } = packageJson;
-const { chain, compile, deploy, one, many, send, useLocalCloudWorker } =
+const { chain, compile, deploy, one, many, send, files, useLocalCloudWorker } =
   processArguments();
 
 const api = new zkCloudWorkerClient({
@@ -357,6 +357,35 @@ describe("Add Worker", () => {
       Memory.info(`Many txs sent`);
     });
   }
+
+  if (files) {
+    it(`should save and get files`, async () => {
+      expect(blockchainInitialized).toBe(true);
+      console.time(`One txs sent`);
+      const answer = await api.execute({
+        developer,
+        repo,
+        transactions: [],
+        task: "files",
+        args: JSON.stringify({
+          contractAddress: contractPublicKey.toBase58(),
+          text: "Hello, World!",
+        }),
+        metadata: `files`,
+      });
+      console.log("answer:", answer);
+      expect(answer).toBeDefined();
+      expect(answer.success).toBe(true);
+      const jobId = answer.jobId;
+      expect(jobId).toBeDefined();
+      if (jobId === undefined) throw new Error("Job ID is undefined");
+      const filesResult = await api.waitForJobResult({
+        jobId,
+        printLogs: true,
+      });
+      console.log("Files test result:", filesResult.result.result);
+    });
+  }
 });
 
 function processArguments(): {
@@ -366,6 +395,7 @@ function processArguments(): {
   one: boolean;
   many: boolean;
   send: boolean;
+  files: boolean;
   useLocalCloudWorker: boolean;
 } {
   function getArgument(arg: string): string | undefined {
@@ -379,6 +409,7 @@ function processArguments(): {
   const one = getArgument("one") ?? "true";
   const many = getArgument("many") ?? "true";
   const send = getArgument("send") ?? "false";
+  const files = getArgument("files") ?? "false";
   const cloud = getArgument("cloud");
 
   if (
@@ -395,6 +426,7 @@ function processArguments(): {
     one: one === "true",
     many: many === "true",
     send: send === "true",
+    files: files === "true",
     useLocalCloudWorker: cloud
       ? cloud === "local"
       : chainName === "local" || chainName === "lightnet",
