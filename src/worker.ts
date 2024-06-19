@@ -131,6 +131,9 @@ export class AddWorker extends zkCloudWorker {
       case "verifyProof":
         return await this.verifyProof(args);
 
+      case "files":
+        return await this.files(args);
+
       default:
         throw new Error(`Unknown task: ${this.cloud.task}`);
     }
@@ -149,6 +152,22 @@ export class AddWorker extends zkCloudWorker {
     const ok = await verify(proof, AddWorker.programVerificationKey);
     if (ok) return "Proof verified";
     else return "Proof verification failed";
+  }
+
+  private async files(args: { text: string }): Promise<string> {
+    console.log("files test", args);
+    if (args.text === undefined) throw new Error("args.text is undefined");
+    const str = args.text;
+    const buf = Buffer.from(str);
+    await this.cloud.saveFile("text.txt", buf);
+    const buf2 = await this.cloud.loadFile("text.txt");
+    if (buf2 === undefined) return "Error loading file";
+    const str2 = buf2.toString();
+    if (str === str2) return "Files test is passed";
+    else {
+      console.log("Files are different", { str2, buf2 });
+      return "Files are different";
+    }
   }
 
   private async sendTx(args: {
