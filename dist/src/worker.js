@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.zkcloudworker = exports.AddWorker = void 0;
+exports.AddWorker = void 0;
 const zkcloudworker_1 = require("zkcloudworker");
 const o1js_1 = require("o1js");
 const contract_1 = require("./contract");
@@ -8,9 +8,6 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
     constructor(cloud) {
         super(cloud);
         this.cache = o1js_1.Cache.FileSystem(this.cloud.cache);
-    }
-    async deployedContracts() {
-        throw new Error("not implemented");
     }
     async compile(compileSmartContracts = true) {
         try {
@@ -83,6 +80,8 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
                 return await this.sendTx({ ...args, isMany: true });
             case "verifyProof":
                 return await this.verifyProof(args);
+            case "files":
+                return await this.files(args);
             default:
                 throw new Error(`Unknown task: ${this.cloud.task}`);
         }
@@ -99,6 +98,24 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
             return "Proof verified";
         else
             return "Proof verification failed";
+    }
+    async files(args) {
+        console.log("files test", args);
+        if (args.text === undefined)
+            throw new Error("args.text is undefined");
+        const str = args.text;
+        const buf = Buffer.from(str);
+        await this.cloud.saveFile("text.txt", buf);
+        const buf2 = await this.cloud.loadFile("text.txt");
+        if (buf2 === undefined)
+            return "Error loading file";
+        const str2 = buf2.toString();
+        if (str === str2)
+            return "Files test is passed";
+        else {
+            console.log("Files are different", { str2, buf2 });
+            return "Files are different";
+        }
     }
     async sendTx(args) {
         if (args.isMany === undefined)
@@ -207,7 +224,3 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
 exports.AddWorker = AddWorker;
 AddWorker.programVerificationKey = undefined;
 AddWorker.contractVerificationKey = undefined;
-async function zkcloudworker(cloud) {
-    return new AddWorker(cloud);
-}
-exports.zkcloudworker = zkcloudworker;

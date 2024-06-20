@@ -2,7 +2,6 @@ import {
   zkCloudWorker,
   Cloud,
   fee,
-  DeployedSmartContract,
   sleep,
   deserializeFields,
   fetchMinaAccount,
@@ -28,10 +27,6 @@ export class AddWorker extends zkCloudWorker {
   constructor(cloud: Cloud) {
     super(cloud);
     this.cache = Cache.FileSystem(this.cloud.cache);
-  }
-
-  public async deployedContracts(): Promise<DeployedSmartContract[]> {
-    throw new Error("not implemented");
   }
 
   private async compile(compileSmartContracts: boolean = true): Promise<void> {
@@ -294,8 +289,4 @@ export class AddWorker extends zkCloudWorker {
       return "Error sending transaction";
     }
   }
-}
-
-export async function zkcloudworker(cloud: Cloud): Promise<zkCloudWorker> {
-  return new AddWorker(cloud);
 }

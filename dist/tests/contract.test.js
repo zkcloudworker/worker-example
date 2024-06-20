@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const globals_1 = require("@jest/globals");
 const o1js_1 = require("o1js");
 const zkcloudworker_1 = require("zkcloudworker");
-const worker_1 = require("../src/worker");
+const __1 = require("..");
 const contract_1 = require("../src/contract");
 const config_1 = require("./config");
 const package_json_1 = __importDefault(require("../package.json"));
@@ -15,10 +15,10 @@ const MANY_ELEMENTS_NUMBER = 1;
 const MANY_BATCH_SIZE = 3;
 (0, o1js_1.setNumberOfWorkers)(8);
 const { name: repo, author: developer } = package_json_1.default;
-const { chain, compile, deploy, one, many, send, useLocalCloudWorker } = processArguments();
+const { chain, compile, deploy, one, many, send, files, useLocalCloudWorker } = processArguments();
 const api = new zkcloudworker_1.zkCloudWorkerClient({
     jwt: useLocalCloudWorker ? "local" : config_1.JWT,
-    zkcloudworker: worker_1.zkcloudworker,
+    zkcloudworker: __1.zkcloudworker,
     chain,
 });
 let deployer;
@@ -288,6 +288,35 @@ let blockchainInitialized = false;
             zkcloudworker_1.Memory.info(`Many txs sent`);
         });
     }
+    if (files) {
+        (0, globals_1.it)(`should save and get files`, async () => {
+            (0, globals_1.expect)(blockchainInitialized).toBe(true);
+            console.time(`One txs sent`);
+            const answer = await api.execute({
+                developer,
+                repo,
+                transactions: [],
+                task: "files",
+                args: JSON.stringify({
+                    contractAddress: contractPublicKey.toBase58(),
+                    text: "Hello, World!",
+                }),
+                metadata: `files`,
+            });
+            console.log("answer:", answer);
+            (0, globals_1.expect)(answer).toBeDefined();
+            (0, globals_1.expect)(answer.success).toBe(true);
+            const jobId = answer.jobId;
+            (0, globals_1.expect)(jobId).toBeDefined();
+            if (jobId === undefined)
+                throw new Error("Job ID is undefined");
+            const filesResult = await api.waitForJobResult({
+                jobId,
+                printLogs: true,
+            });
+            console.log("Files test result:", filesResult.result.result);
+        });
+    }
 });
 function processArguments() {
     function getArgument(arg) {
@@ -300,6 +329,7 @@ function processArguments() {
     const one = getArgument("one") ?? "true";
     const many = getArgument("many") ?? "true";
     const send = getArgument("send") ?? "false";
+    const files = getArgument("files") ?? "false";
     const cloud = getArgument("cloud");
     if (chainName !== "local" &&
         chainName !== "devnet" &&
@@ -313,6 +343,7 @@ function processArguments() {
         one: one === "true",
         many: many === "true",
         send: send === "true",
+        files: files === "true",
         useLocalCloudWorker: cloud
             ? cloud === "local"
             : chainName === "local" || chainName === "lightnet",
