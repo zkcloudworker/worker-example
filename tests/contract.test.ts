@@ -21,7 +21,7 @@ import {
   serializeFields,
   accountBalanceMina,
 } from "zkcloudworker";
-import { zkcloudworker } from "../src/worker";
+import { zkcloudworker } from "..";
 import { AddContract, AddProgram, limit, AddValue } from "../src/contract";
 import { contract, JWT, DEPLOYER } from "./config";
 import packageJson from "../package.json";
