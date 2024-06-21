@@ -213,10 +213,14 @@ export class AddWorker extends zkCloudWorker {
     await this.compile();
 
     let tx;
+    let value: string;
+    let limit: string;
     if (isMany) {
       const proof = (await AddProgramProof.fromJSON(
         JSON.parse(args.proof!) as JsonProof
       )) as AddProgramProof;
+      value = proof.publicOutput.value.toJSON();
+      limit = proof.publicOutput.limit.toJSON();
 
       tx = await Mina.transaction(
         { sender, fee: await fee(), memo },
@@ -233,6 +237,8 @@ export class AddWorker extends zkCloudWorker {
         value: addValue.value.toJSON(),
         limit: addValue.limit.toJSON(),
       });
+      value = addValue.value.toJSON();
+      limit = addValue.limit.toJSON();
 
       tx = await Mina.transaction(
         { sender, fee: await fee(), memo },
@@ -283,6 +289,15 @@ export class AddWorker extends zkCloudWorker {
         publicKey: deployerKeyPair.publicKey,
         txsHashes: txSent?.hash ? [txSent.hash] : [],
       });
+      if (txSent?.hash)
+        this.cloud.publishTransactionMetadata({
+          txId: txSent?.hash,
+          metadata: {
+            method: isMany ? "addMany" : "addOne",
+            value,
+            limit,
+          } as any,
+        });
       return txSent?.hash ?? "Error sending transaction";
     } catch (error) {
       console.error("Error sending transaction", error);
