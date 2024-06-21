@@ -158,8 +158,12 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
         console.log("Sender balance:", await (0, zkcloudworker_1.accountBalanceMina)(sender));
         await this.compile();
         let tx;
+        let value;
+        let limit;
         if (isMany) {
             const proof = (await contract_1.AddProgramProof.fromJSON(JSON.parse(args.proof)));
+            value = proof.publicOutput.value.toJSON();
+            limit = proof.publicOutput.limit.toJSON();
             tx = await o1js_1.Mina.transaction({ sender, fee: await (0, zkcloudworker_1.fee)(), memo }, async () => {
                 o1js_1.AccountUpdate.fundNewAccount(sender);
                 await zkApp.addMany(address, proof);
@@ -171,6 +175,8 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
                 value: addValue.value.toJSON(),
                 limit: addValue.limit.toJSON(),
             });
+            value = addValue.value.toJSON();
+            limit = addValue.limit.toJSON();
             tx = await o1js_1.Mina.transaction({ sender, fee: await (0, zkcloudworker_1.fee)(), memo }, async () => {
                 o1js_1.AccountUpdate.fundNewAccount(sender);
                 await zkApp.addOne(address, addValue);
@@ -213,6 +219,15 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
                 publicKey: deployerKeyPair.publicKey,
                 txsHashes: txSent?.hash ? [txSent.hash] : [],
             });
+            if (txSent?.hash)
+                this.cloud.publishTransactionMetadata({
+                    txId: txSent?.hash,
+                    metadata: {
+                        method: isMany ? "addMany" : "addOne",
+                        value,
+                        limit,
+                    },
+                });
             return txSent?.hash ?? "Error sending transaction";
         }
         catch (error) {
