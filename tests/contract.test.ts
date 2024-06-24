@@ -23,8 +23,9 @@ import {
 } from "zkcloudworker";
 import { zkcloudworker } from "..";
 import { AddContract, AddProgram, limit, AddValue } from "../src/contract";
-import { contract, JWT, DEPLOYER } from "./config";
+import { contract, DEPLOYER } from "./config";
 import packageJson from "../package.json";
+import { JWT } from "../env.json";
 
 const ONE_ELEMENTS_NUMBER = 1;
 const MANY_ELEMENTS_NUMBER = 1;

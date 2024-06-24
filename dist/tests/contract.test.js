@@ -10,6 +10,7 @@ const __1 = require("..");
 const contract_1 = require("../src/contract");
 const config_1 = require("./config");
 const package_json_1 = __importDefault(require("../package.json"));
+const env_json_1 = require("../env.json");
 const ONE_ELEMENTS_NUMBER = 1;
 const MANY_ELEMENTS_NUMBER = 1;
 const MANY_BATCH_SIZE = 3;
@@ -17,7 +18,7 @@ const MANY_BATCH_SIZE = 3;
 const { name: repo, author: developer } = package_json_1.default;
 const { chain, compile, deploy, one, many, send, files, useLocalCloudWorker } = processArguments();
 const api = new zkcloudworker_1.zkCloudWorkerClient({
-    jwt: useLocalCloudWorker ? "local" : config_1.JWT,
+    jwt: useLocalCloudWorker ? "local" : env_json_1.JWT,
     zkcloudworker: __1.zkcloudworker,
     chain,
 });
