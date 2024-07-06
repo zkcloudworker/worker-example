@@ -33,8 +33,17 @@ const MANY_BATCH_SIZE = 3;
 setNumberOfWorkers(8);
 
 const { name: repo, author: developer } = packageJson;
-const { chain, compile, deploy, one, many, send, files, useLocalCloudWorker } =
-  processArguments();
+const {
+  chain,
+  compile,
+  deploy,
+  one,
+  many,
+  send,
+  files,
+  encrypt,
+  useLocalCloudWorker,
+} = processArguments();
 
 const api = new zkCloudWorkerClient({
   jwt: useLocalCloudWorker ? "local" : JWT,
@@ -362,7 +371,6 @@ describe("Add Worker", () => {
   if (files) {
     it(`should save and get files`, async () => {
       expect(blockchainInitialized).toBe(true);
-      console.time(`One txs sent`);
       const answer = await api.execute({
         developer,
         repo,
@@ -387,6 +395,61 @@ describe("Add Worker", () => {
       console.log("Files test result:", filesResult.result.result);
     });
   }
+
+  if (encrypt) {
+    it(`should save and get encrypted data`, async () => {
+      let answer = await api.execute({
+        developer,
+        repo,
+        transactions: [],
+        task: "encrypt",
+        args: JSON.stringify({
+          contractAddress: contractPublicKey.toBase58(),
+          text: "Hello, World!",
+        }),
+        metadata: `files`,
+      });
+      console.log("answer:", answer);
+      expect(answer).toBeDefined();
+      expect(answer.success).toBe(true);
+      let jobId = answer.jobId;
+      expect(jobId).toBeDefined();
+      if (jobId === undefined) throw new Error("Job ID is undefined");
+      let result = await api.waitForJobResult({
+        jobId,
+        printLogs: true,
+      });
+      const encrypted = result.result.result;
+      console.log("Encrypted data:", encrypted);
+      if (encrypted === undefined)
+        throw new Error("Encrypted data is undefined");
+      if (encrypted === "Error encrypting") throw new Error("Error encrypting");
+      answer = await api.execute({
+        developer,
+        repo,
+        transactions: [],
+        task: "decrypt",
+        args: JSON.stringify({
+          contractAddress: contractPublicKey.toBase58(),
+          text: encrypted,
+        }),
+        metadata: `files`,
+      });
+      console.log("answer:", answer);
+      expect(answer).toBeDefined();
+      expect(answer.success).toBe(true);
+      jobId = answer.jobId;
+      expect(jobId).toBeDefined();
+      if (jobId === undefined) throw new Error("Job ID is undefined");
+      result = await api.waitForJobResult({
+        jobId,
+        printLogs: true,
+      });
+      const decrypted = result.result.result;
+      console.log("Decrypted data:", decrypted);
+      expect(decrypted).toBe("Hello, World!");
+    });
+  }
 });
 
 function processArguments(): {
@@ -397,6 +460,7 @@ function processArguments(): {
   many: boolean;
   send: boolean;
   files: boolean;
+  encrypt: boolean;
   useLocalCloudWorker: boolean;
 } {
   function getArgument(arg: string): string | undefined {
@@ -411,6 +475,7 @@ function processArguments(): {
   const many = getArgument("many") ?? "true";
   const send = getArgument("send") ?? "false";
   const files = getArgument("files") ?? "false";
+  const encrypt = getArgument("encrypt") ?? "false";
   const cloud = getArgument("cloud");
 
   if (
@@ -428,6 +493,7 @@ function processArguments(): {
     many: many === "true",
     send: send === "true",
     files: files === "true",
+    encrypt: encrypt === "true",
     useLocalCloudWorker: cloud
       ? cloud === "local"
       : chainName === "local" || chainName === "lightnet",

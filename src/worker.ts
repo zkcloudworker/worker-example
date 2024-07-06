@@ -129,6 +129,12 @@ export class AddWorker extends zkCloudWorker {
       case "files":
         return await this.files(args);
 
+      case "encrypt":
+        return await this.encrypt(args);
+
+      case "decrypt":
+        return await this.decrypt(args);
+
       default:
         throw new Error(`Unknown task: ${this.cloud.task}`);
     }
@@ -163,6 +169,36 @@ export class AddWorker extends zkCloudWorker {
       console.log("Files are different", { str2, buf2 });
       return "Files are different";
     }
+  }
+
+  private async encrypt(args: {
+    contractAddress: string;
+    text: string;
+  }): Promise<string> {
+    console.log("encrypt", args);
+    const { text, contractAddress } = args;
+    if (text === undefined) throw new Error("args.text is undefined");
+    if (contractAddress === undefined)
+      throw new Error("args.contractAddress is undefined");
+    return (
+      (await this.cloud.encrypt({ data: text, context: contractAddress })) ??
+      "Error encrypting"
+    );
+  }
+
+  private async decrypt(args: {
+    contractAddress: string;
+    text: string;
+  }): Promise<string> {
+    console.log("decrypt", args);
+    const { text, contractAddress } = args;
+    if (text === undefined) throw new Error("args.text is undefined");
+    if (contractAddress === undefined)
+      throw new Error("args.contractAddress is undefined");
+    return (
+      (await this.cloud.decrypt({ data: text, context: contractAddress })) ??
+      "Error decrypting"
+    );
   }
 
   private async sendTx(args: {
