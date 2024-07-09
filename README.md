@@ -41,7 +41,13 @@ Install zkCloudWorker CLI tool
 npm install -g zkcloudworker-cli
 ```
 
-Deploy this repo to the zkCloudWorker cloud
+Get the JWT key at https://minarollupscan.com/jwt and write it to the config:
+
+```sh
+zkcw config --jwt eyJhbGciOiJIUz.... (replace with your JWT key)
+```
+
+Deploy this repo to the zkCloudWorker cloud (increase the version number in package.json before each deployment)
 
 ```sh
 zkcw deploy
