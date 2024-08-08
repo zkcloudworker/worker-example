@@ -1,6 +1,6 @@
 {
   "name": "worker-example",
-  "version": "0.7.0",
+  "version": "0.7.2",
   "author": "DFST",
   "scripts": {
     "test": "jest",
