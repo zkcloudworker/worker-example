@@ -78,10 +78,10 @@ export class AddWorker extends zkCloudWorker {
     if (AddWorker.programVerificationKey === undefined)
       throw new Error("verificationKey is undefined");
 
-    const proof = await AddProgram.create(addValue);
+    const output = await AddProgram.create(addValue);
     console.timeEnd(msg);
 
-    return JSON.stringify(proof.toJSON(), null, 2);
+    return JSON.stringify(output.proof.toJSON(), null, 2);
   }
 
   public async merge(
@@ -101,11 +101,14 @@ export class AddWorker extends zkCloudWorker {
       JSON.parse(proof2) as JsonProof
     );
 
-    const proof = await AddProgram.merge(sourceProof1, sourceProof2);
-    const ok = await verify(proof.toJSON(), AddWorker.programVerificationKey);
+    const output = await AddProgram.merge(sourceProof1, sourceProof2);
+    const ok = await verify(
+      output.proof.toJSON(),
+      AddWorker.programVerificationKey
+    );
     if (!ok) throw new Error("proof verification failed");
     console.timeEnd(msg);
-    return JSON.stringify(proof.toJSON(), null, 2);
+    return JSON.stringify(output.proof.toJSON(), null, 2);
   }
 
   public async execute(transactions: string[]): Promise<string | undefined> {
@@ -231,7 +234,7 @@ export class AddWorker extends zkCloudWorker {
     if (deployerKeyPair === undefined)
       throw new Error("deployerKeyPair is undefined");
     const deployer = PrivateKey.fromBase58(deployerKeyPair.privateKey);
-    console.log("cloud deployer:", deployer.toBase58());
+    console.log("cloud deployer:", deployer.toPublicKey().toBase58());
     if (deployer === undefined) throw new Error("deployer is undefined");
     const sender = deployer.toPublicKey();
 

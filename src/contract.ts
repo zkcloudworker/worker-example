@@ -43,7 +43,7 @@ export const AddProgram = ZkProgram({
           UInt64.from(0),
           "Value must be positive"
         );
-        return addValue;
+        return { publicOutput: addValue };
       },
     },
 
@@ -57,10 +57,12 @@ export const AddProgram = ZkProgram({
         proof2.verify();
         proof1.publicOutput.limit.assertEquals(proof2.publicOutput.limit);
 
-        return new AddValue({
-          value: proof1.publicOutput.value.add(proof2.publicOutput.value),
-          limit: proof1.publicOutput.limit,
-        });
+        return {
+          publicOutput: new AddValue({
+            value: proof1.publicOutput.value.add(proof2.publicOutput.value),
+            limit: proof1.publicOutput.limit,
+          }),
+        };
       },
     },
   },
@@ -88,17 +90,17 @@ export class AddContract extends TokenContract {
     const limit = this.limit.getAndRequireEquals();
     addValue.value.assertLessThan(limit, "Value exceeds limit");
     addValue.value.assertGreaterThan(UInt64.from(0), "Value must be positive");
-    this.createAddValue(address, addValue);
+    await this.createAddValue(address, addValue);
   }
 
   @method async addMany(address: PublicKey, proof: AddProgramProof) {
     const limit = this.limit.getAndRequireEquals();
     limit.assertEquals(proof.publicOutput.limit);
     proof.verify();
-    this.createAddValue(address, proof.publicOutput);
+    await this.createAddValue(address, proof.publicOutput);
   }
 
-  createAddValue(address: PublicKey, addValue: AddValue) {
+  async createAddValue(address: PublicKey, addValue: AddValue) {
     const tokenId = this.deriveTokenId();
     const update = AccountUpdate.createSigned(address, tokenId);
     update.account.balance.getAndRequireEquals().assertEquals(UInt64.from(0));

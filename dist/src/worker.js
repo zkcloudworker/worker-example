@@ -47,9 +47,9 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
         await this.compile(false);
         if (AddWorker.programVerificationKey === undefined)
             throw new Error("verificationKey is undefined");
-        const proof = await contract_1.AddProgram.create(addValue);
+        const output = await contract_1.AddProgram.create(addValue);
         console.timeEnd(msg);
-        return JSON.stringify(proof.toJSON(), null, 2);
+        return JSON.stringify(output.proof.toJSON(), null, 2);
     }
     async merge(proof1, proof2) {
         const msg = `proof merged`;
@@ -59,12 +59,12 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
             throw new Error("verificationKey is undefined");
         const sourceProof1 = await contract_1.AddProgramProof.fromJSON(JSON.parse(proof1));
         const sourceProof2 = await contract_1.AddProgramProof.fromJSON(JSON.parse(proof2));
-        const proof = await contract_1.AddProgram.merge(sourceProof1, sourceProof2);
-        const ok = await (0, o1js_1.verify)(proof.toJSON(), AddWorker.programVerificationKey);
+        const output = await contract_1.AddProgram.merge(sourceProof1, sourceProof2);
+        const ok = await (0, o1js_1.verify)(output.proof.toJSON(), AddWorker.programVerificationKey);
         if (!ok)
             throw new Error("proof verification failed");
         console.timeEnd(msg);
-        return JSON.stringify(proof.toJSON(), null, 2);
+        return JSON.stringify(output.proof.toJSON(), null, 2);
     }
     async execute(transactions) {
         if (this.cloud.args === undefined)
@@ -82,6 +82,10 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
                 return await this.verifyProof(args);
             case "files":
                 return await this.files(args);
+            case "encrypt":
+                return await this.encrypt(args);
+            case "decrypt":
+                return await this.decrypt(args);
             default:
                 throw new Error(`Unknown task: ${this.cloud.task}`);
         }
@@ -117,6 +121,26 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
             return "Files are different";
         }
     }
+    async encrypt(args) {
+        console.log("encrypt", args);
+        const { text, contractAddress } = args;
+        if (text === undefined)
+            throw new Error("args.text is undefined");
+        if (contractAddress === undefined)
+            throw new Error("args.contractAddress is undefined");
+        return ((await this.cloud.encrypt({ data: text, context: contractAddress })) ??
+            "Error encrypting");
+    }
+    async decrypt(args) {
+        console.log("decrypt", args);
+        const { text, contractAddress } = args;
+        if (text === undefined)
+            throw new Error("args.text is undefined");
+        if (contractAddress === undefined)
+            throw new Error("args.contractAddress is undefined");
+        return ((await this.cloud.decrypt({ data: text, context: contractAddress })) ??
+            "Error decrypting");
+    }
     async sendTx(args) {
         if (args.isMany === undefined)
             throw new Error("args.isMany is undefined");
@@ -142,7 +166,7 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
         if (deployerKeyPair === undefined)
             throw new Error("deployerKeyPair is undefined");
         const deployer = o1js_1.PrivateKey.fromBase58(deployerKeyPair.privateKey);
-        console.log("cloud deployer:", deployer.toBase58());
+        console.log("cloud deployer:", deployer.toPublicKey().toBase58());
         if (deployer === undefined)
             throw new Error("deployer is undefined");
         const sender = deployer.toPublicKey();
@@ -202,7 +226,7 @@ class AddWorker extends zkcloudworker_1.zkCloudWorker {
                     await (0, zkcloudworker_1.sleep)(10000);
                 }
                 else {
-                    console.log(`${memo} tx NOT sent: hash: ${txSent?.hash} status: ${txSent?.status}`);
+                    console.log(`${memo} tx NOT sent: hash: ${txSent?.hash} status: ${txSent?.status} errors: ${txSent.errors.join(", ")}`);
                     return "Error sending transaction";
                 }
             }

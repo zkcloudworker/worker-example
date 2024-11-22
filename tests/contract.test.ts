@@ -177,9 +177,10 @@ describe("Add Worker", () => {
   if (deploy) {
     it(`should deploy contract`, async () => {
       expect(blockchainInitialized).toBe(true);
-      console.log(`Deploying contract...`);
+      console.log("Fetching sender account...");
 
       await fetchMinaAccount({ publicKey: sender, force: true });
+      console.log(`Deploying contract...`);
 
       const tx = await Mina.transaction(
         { sender, fee: await fee(), memo: "deploy" },
@@ -509,7 +510,7 @@ async function sendTx(
     let sent = false;
     while (!sent) {
       txSent = await tx.safeSend();
-      if (txSent.status == "pending") {
+      if (txSent.status === "pending") {
         sent = true;
         console.log(
           `${description ?? ""} tx sent: hash: ${txSent.hash} status: ${
