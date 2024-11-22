@@ -16,7 +16,7 @@ const MANY_ELEMENTS_NUMBER = 1;
 const MANY_BATCH_SIZE = 3;
 (0, o1js_1.setNumberOfWorkers)(8);
 const { name: repo, author: developer } = package_json_1.default;
-const { chain, compile, deploy, one, many, send, files, useLocalCloudWorker } = processArguments();
+const { chain, compile, deploy, one, many, send, files, encrypt, useLocalCloudWorker, } = processArguments();
 const api = new zkcloudworker_1.zkCloudWorkerClient({
     jwt: useLocalCloudWorker ? "local" : env_json_1.JWT,
     zkcloudworker: __1.zkcloudworker,
@@ -123,8 +123,9 @@ let blockchainInitialized = false;
     if (deploy) {
         (0, globals_1.it)(`should deploy contract`, async () => {
             (0, globals_1.expect)(blockchainInitialized).toBe(true);
-            console.log(`Deploying contract...`);
+            console.log("Fetching sender account...");
             await (0, zkcloudworker_1.fetchMinaAccount)({ publicKey: sender, force: true });
+            console.log(`Deploying contract...`);
             const tx = await o1js_1.Mina.transaction({ sender, fee: await (0, zkcloudworker_1.fee)(), memo: "deploy" }, async () => {
                 o1js_1.AccountUpdate.fundNewAccount(sender);
                 await zkApp.deploy({});
@@ -292,7 +293,6 @@ let blockchainInitialized = false;
     if (files) {
         (0, globals_1.it)(`should save and get files`, async () => {
             (0, globals_1.expect)(blockchainInitialized).toBe(true);
-            console.time(`One txs sent`);
             const answer = await api.execute({
                 developer,
                 repo,
@@ -318,6 +318,63 @@ let blockchainInitialized = false;
             console.log("Files test result:", filesResult.result.result);
         });
     }
+    if (encrypt) {
+        (0, globals_1.it)(`should save and get encrypted data`, async () => {
+            let answer = await api.execute({
+                developer,
+                repo,
+                transactions: [],
+                task: "encrypt",
+                args: JSON.stringify({
+                    contractAddress: contractPublicKey.toBase58(),
+                    text: "Hello, World!",
+                }),
+                metadata: `files`,
+            });
+            console.log("answer:", answer);
+            (0, globals_1.expect)(answer).toBeDefined();
+            (0, globals_1.expect)(answer.success).toBe(true);
+            let jobId = answer.jobId;
+            (0, globals_1.expect)(jobId).toBeDefined();
+            if (jobId === undefined)
+                throw new Error("Job ID is undefined");
+            let result = await api.waitForJobResult({
+                jobId,
+                printLogs: true,
+            });
+            const encrypted = result.result.result;
+            console.log("Encrypted data:", encrypted);
+            if (encrypted === undefined)
+                throw new Error("Encrypted data is undefined");
+            if (encrypted === "Error encrypting")
+                throw new Error("Error encrypting");
+            answer = await api.execute({
+                developer,
+                repo,
+                transactions: [],
+                task: "decrypt",
+                args: JSON.stringify({
+                    contractAddress: contractPublicKey.toBase58(),
+                    text: encrypted,
+                }),
+                metadata: `files`,
+            });
+            console.log("answer:", answer);
+            (0, globals_1.expect)(answer).toBeDefined();
+            (0, globals_1.expect)(answer.success).toBe(true);
+            jobId = answer.jobId;
+            (0, globals_1.expect)(jobId).toBeDefined();
+            if (jobId === undefined)
+                throw new Error("Job ID is undefined");
+            result = await api.waitForJobResult({
+                jobId,
+                printLogs: true,
+            });
+            const decrypted = result.result.result;
+            console.log("Decrypted data:", decrypted);
+            (0, globals_1.expect)(decrypted).toBe("Hello, World!");
+        });
+    }
 });
 function processArguments() {
     function getArgument(arg) {
@@ -331,6 +388,7 @@ function processArguments() {
     const many = getArgument("many") ?? "true";
     const send = getArgument("send") ?? "false";
     const files = getArgument("files") ?? "false";
+    const encrypt = getArgument("encrypt") ?? "false";
     const cloud = getArgument("cloud");
     if (chainName !== "local" &&
         chainName !== "devnet" &&
@@ -345,6 +403,7 @@ function processArguments() {
         many: many === "true",
         send: send === "true",
         files: files === "true",
+        encrypt: encrypt === "true",
         useLocalCloudWorker: cloud
             ? cloud === "local"
             : chainName === "local" || chainName === "lightnet",
@@ -356,7 +415,7 @@ async function sendTx(tx, description) {
         let sent = false;
         while (!sent) {
             txSent = await tx.safeSend();
-            if (txSent.status == "pending") {
+            if (txSent.status === "pending") {
                 sent = true;
                 console.log(`${description ?? ""} tx sent: hash: ${txSent.hash} status: ${txSent.status}`);
             }

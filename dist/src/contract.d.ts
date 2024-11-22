@@ -134,6 +134,7 @@ export declare const AddProgram: {
     compile: (options?: {
         cache?: import("o1js").Cache | undefined;
         forceRecompile?: boolean | undefined;
+        proofsEnabled?: boolean | undefined;
     } | undefined) => Promise<{
         verificationKey: {
             data: string;
@@ -166,50 +167,63 @@ export declare const AddProgram: {
         create: [typeof AddValue];
         merge: [typeof SelfProof, typeof SelfProof];
     };
-    rawMethods: {
-        create: (...args: [AddValue] & any[]) => Promise<AddValue>;
-        merge: (...args: [SelfProof<unknown, unknown>, SelfProof<unknown, unknown>] & any[]) => Promise<AddValue>;
+    auxiliaryOutputTypes: {
+        create: undefined;
+        merge: undefined;
     };
+    rawMethods: {
+        create: (...args: [AddValue] & any[]) => Promise<{
+            publicOutput: AddValue;
+        }>;
+        merge: (...args: [SelfProof<unknown, unknown>, SelfProof<unknown, unknown>] & any[]) => Promise<{
+            publicOutput: AddValue;
+        }>;
+    };
+    proofsEnabled: boolean;
+    setProofsEnabled(proofsEnabled: boolean): void;
 } & {
-    create: (...args: [AddValue] & any[]) => Promise<import("o1js").Proof<undefined, AddValue>>;
-    merge: (...args: [SelfProof<unknown, unknown>, SelfProof<unknown, unknown>] & any[]) => Promise<import("o1js").Proof<undefined, AddValue>>;
+    create: (...args: [AddValue] & any[]) => Promise<{
+        proof: import("o1js").Proof<undefined, AddValue>;
+        auxiliaryOutput: undefined;
+    }>;
+    merge: (...args: [SelfProof<unknown, unknown>, SelfProof<unknown, unknown>] & any[]) => Promise<{
+        proof: import("o1js").Proof<undefined, AddValue>;
+        auxiliaryOutput: undefined;
+    }>;
 };
 declare const AddProgramProof_base: {
     new ({ proof, publicInput, publicOutput, maxProofsVerified, }: {
         proof: unknown;
         publicInput: undefined;
         publicOutput: AddValue;
-        maxProofsVerified: 0 | 1 | 2;
-    }): {
-        verify(): void;
-        verifyIf(condition: import("o1js/dist/node/lib/provable/bool").Bool): void;
-        publicInput: undefined;
-        publicOutput: AddValue;
-        proof: unknown;
-        maxProofsVerified: 0 | 1 | 2;
-        shouldVerify: import("o1js/dist/node/lib/provable/bool").Bool;
-        toJSON(): import("o1js").JsonProof;
+        maxProofsVerified: 0 | 2 | 1;
+    }): import("o1js").Proof<undefined, AddValue>;
+    fromJSON<S extends import("o1js/dist/node/lib/util/types").Subclass<typeof import("o1js").Proof>>(this: S, { maxProofsVerified, proof: proofString, publicInput: publicInputJson, publicOutput: publicOutputJson, }: import("o1js").JsonProof): Promise<import("o1js").Proof<import("o1js").InferProvable<S["publicInputType"]>, import("o1js").InferProvable<S["publicOutputType"]>>>;
+    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 2 | 1, domainLog2?: number | undefined): Promise<import("o1js").Proof<Input, OutPut>>;
+    readonly provable: {
+        toFields: (value: import("o1js").Proof<any, any>) => import("o1js/dist/node/lib/provable/field").Field[];
+        toAuxiliary: (value?: import("o1js").Proof<any, any> | undefined) => any[];
+        fromFields: (fields: import("o1js/dist/node/lib/provable/field").Field[], aux: any[]) => import("o1js").Proof<any, any>;
+        sizeInFields(): number;
+        check: (value: import("o1js").Proof<any, any>) => void;
+        toValue: (x: import("o1js").Proof<any, any>) => import("o1js/dist/node/lib/proof-system/proof").ProofValue<any, any>;
+        fromValue: (x: import("o1js").Proof<any, any> | import("o1js/dist/node/lib/proof-system/proof").ProofValue<any, any>) => import("o1js").Proof<any, any>;
+        toCanonical?: ((x: import("o1js").Proof<any, any>) => import("o1js").Proof<any, any>) | undefined;
     };
-    publicInputType: import("o1js/dist/node/lib/provable/types/struct").ProvablePureExtended<undefined, undefined, null>;
-    publicOutputType: typeof AddValue;
+    publicInputType: import("o1js").FlexibleProvablePure<any>;
+    publicOutputType: import("o1js").FlexibleProvablePure<any>;
     tag: () => {
         name: string;
-        publicInputType: import("o1js/dist/node/lib/provable/types/struct").ProvablePureExtended<undefined, undefined, null>;
-        publicOutputType: typeof AddValue;
     };
-    fromJSON<S extends (new (...args: any) => import("o1js").Proof<unknown, unknown>) & {
-        prototype: import("o1js").Proof<any, any>;
-        fromJSON: typeof import("o1js").Proof.fromJSON;
-        dummy: typeof import("o1js").Proof.dummy;
-        publicInputType: import("o1js").FlexibleProvablePure<any>;
-        publicOutputType: import("o1js").FlexibleProvablePure<any>;
-        tag: () => {
-            name: string;
-        };
-    } & {
-        prototype: import("o1js").Proof<unknown, unknown>;
-    }>(this: S, { maxProofsVerified, proof: proofString, publicInput: publicInputJson, publicOutput: publicOutputJson, }: import("o1js").JsonProof): Promise<import("o1js").Proof<import("o1js").InferProvable<S["publicInputType"]>, import("o1js").InferProvable<S["publicOutputType"]>>>;
-    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 1 | 2, domainLog2?: number | undefined): Promise<import("o1js").Proof<Input, OutPut>>;
+    publicFields(value: import("o1js").ProofBase<any, any>): {
+        input: import("o1js/dist/node/lib/provable/field").Field[];
+        output: import("o1js/dist/node/lib/provable/field").Field[];
+    };
+} & {
+    provable: import("o1js").Provable<import("o1js").Proof<undefined, AddValue>, import("o1js/dist/node/lib/proof-system/proof").ProofValue<undefined, {
+        value: bigint;
+        limit: bigint;
+    }>>;
 };
 export declare class AddProgramProof extends AddProgramProof_base {
 }
@@ -222,6 +236,6 @@ export declare class AddContract extends TokenContract {
     };
     addOne(address: PublicKey, addValue: AddValue): Promise<void>;
     addMany(address: PublicKey, proof: AddProgramProof): Promise<void>;
-    createAddValue(address: PublicKey, addValue: AddValue): void;
+    createAddValue(address: PublicKey, addValue: AddValue): Promise<void>;
 }
 export {};

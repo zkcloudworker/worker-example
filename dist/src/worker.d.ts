@@ -11,5 +11,7 @@ export declare class AddWorker extends zkCloudWorker {
     execute(transactions: string[]): Promise<string | undefined>;
     private verifyProof;
     private files;
+    private encrypt;
+    private decrypt;
     private sendTx;
 }
