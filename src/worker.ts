@@ -305,7 +305,9 @@ export class AddWorker extends zkCloudWorker {
           await sleep(10000);
         } else {
           console.log(
-            `${memo} tx NOT sent: hash: ${txSent?.hash} status: ${txSent?.status}`
+            `${memo} tx NOT sent: hash: ${txSent?.hash} status: ${
+              txSent?.status
+            } errors: ${txSent.errors.join(", ")}`
           );
           return "Error sending transaction";
         }
