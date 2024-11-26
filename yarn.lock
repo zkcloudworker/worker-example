@@ -829,12 +829,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:^22.9.1":
+"@types/node@npm:*":
   version: 22.9.1
   resolution: "@types/node@npm:22.9.1"
   dependencies:
     undici-types: "npm:~6.19.8"
   checksum: 10c0/ea489ae603aa8874e4e88980aab6f2dad09c755da779c88dd142983bfe9609803c89415ca7781f723072934066f63daf2b3339ef084a8ad1a8079cf3958be243
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^22.10.0":
+  version: 22.10.0
+  resolution: "@types/node@npm:22.10.0"
+  dependencies:
+    undici-types: "npm:~6.20.0"
+  checksum: 10c0/efb3783b6fe74b4300c5bdd4f245f1025887d9b1d0950edae584af58a30d95cc058c10b4b3428f8300e4318468b605240c2ede8fcfb6ead2e0f05bca31e54c1b
   languageName: node
   linkType: hard
 
@@ -3503,23 +3512,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.6.3":
-  version: 5.6.3
-  resolution: "typescript@npm:5.6.3"
+"typescript@npm:^5.7.2":
+  version: 5.7.2
+  resolution: "typescript@npm:5.7.2"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/44f61d3fb15c35359bc60399cb8127c30bae554cd555b8e2b46d68fa79d680354b83320ad419ff1b81a0bdf324197b29affe6cc28988cd6a74d4ac60c94f9799
+  checksum: 10c0/a873118b5201b2ef332127ef5c63fb9d9c155e6fdbe211cbd9d8e65877283797cca76546bad742eea36ed7efbe3424a30376818f79c7318512064e8625d61622
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@npm%3A^5.6.3#optional!builtin<compat/typescript>":
-  version: 5.6.3
-  resolution: "typescript@patch:typescript@npm%3A5.6.3#optional!builtin<compat/typescript>::version=5.6.3&hash=8c6c40"
+"typescript@patch:typescript@npm%3A^5.7.2#optional!builtin<compat/typescript>":
+  version: 5.7.2
+  resolution: "typescript@patch:typescript@npm%3A5.7.2#optional!builtin<compat/typescript>::version=5.7.2&hash=5786d5"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/7c9d2e07c81226d60435939618c91ec2ff0b75fbfa106eec3430f0fcf93a584bc6c73176676f532d78c3594fe28a54b36eb40b3d75593071a7ec91301533ace7
+  checksum: 10c0/f3b8082c9d1d1629a215245c9087df56cb784f9fb6f27b5d55577a20e68afe2a889c040aacff6d27e35be165ecf9dca66e694c42eb9a50b3b2c451b36b5675cb
   languageName: node
   linkType: hard
 
@@ -3527,6 +3536,13 @@ __metadata:
   version: 6.19.8
   resolution: "undici-types@npm:6.19.8"
   checksum: 10c0/078afa5990fba110f6824823ace86073b4638f1d5112ee26e790155f481f2a868cc3e0615505b6f4282bdf74a3d8caad715fd809e870c2bb0704e3ea6082f344
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.20.0":
+  version: 6.20.0
+  resolution: "undici-types@npm:6.20.0"
+  checksum: 10c0/68e659a98898d6a836a9a59e6adf14a5d799707f5ea629433e025ac90d239f75e408e2e5ff086afc3cace26f8b26ee52155293564593fbb4a2f666af57fc59bf
   languageName: node
   linkType: hard
 
@@ -3634,12 +3650,12 @@ __metadata:
   dependencies:
     "@jest/globals": "npm:^29.7.0"
     "@types/jest": "npm:^29.5.14"
-    "@types/node": "npm:^22.9.1"
+    "@types/node": "npm:^22.10.0"
     jest: "npm:^29.7.0"
     o1js: "npm:^2.1.0"
     ts-jest: "npm:^29.2.5"
-    typescript: "npm:^5.6.3"
-    zkcloudworker: "npm:^0.16.11"
+    typescript: "npm:^5.7.2"
+    zkcloudworker: "npm:^0.18.15"
   languageName: unknown
   linkType: soft
 
@@ -3732,14 +3748,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zkcloudworker@npm:^0.16.11":
-  version: 0.16.11
-  resolution: "zkcloudworker@npm:0.16.11"
+"zkcloudworker@npm:^0.18.15":
+  version: 0.18.15
+  resolution: "zkcloudworker@npm:0.18.15"
   dependencies:
     axios: "npm:^1.7.7"
     chalk: "npm:^4.1.2"
   peerDependencies:
     o1js: ^2.1.0
-  checksum: 10c0/967ee2dc1e9fde41d6c98614a0f6c89e322489cacab01eebb7599dcde1b9b5a5b5160b296ed9482677b33f387c50befee6c921d0f972c6022d130df01b5aefb8
+  checksum: 10c0/6b9a793e0cc7781ae5bfe6a05e15cad4ebe81c7663897e05085ad0f99ddedc2a50b208b161112cb73a00f6c521cf59cc2d2ace370439df1f528a8c5408b1a4fc
   languageName: node
   linkType: hard
