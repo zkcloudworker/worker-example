@@ -33,6 +33,10 @@ git clone https://github.com/zkcloudworker/worker-example
 cd worker-example
 ```
 
+## Change the name and author in package.json
+
+You will see those names in https://silvascan.io
+
 ## Deploy
 
 Install zkCloudWorker CLI tool
